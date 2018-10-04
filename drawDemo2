@@ -1,0 +1,470 @@
+import java.awt.*;
+import java.util.*;
+import javax.swing.*;
+import java.lang.Math;
+import java.lang.Integer;
+
+/*
+ * -----AUTHOR INFO----- name: Luka Zoric sID: s5027193 email:
+ * luka.zoric@griffithuni.edu.au
+ * 
+ * 
+ * -------APP INFO------ name: DrawGUI resolution: 800x600 description: simple
+ * drawing game, enter coordinates of the shape and draw it onto the screen
+ * 
+ */
+
+// class creating the clear box, by constructing it we get the rectangle that overwrites everything on the screen
+class clear extends JPanel {
+    // paintComponent method used to draw rectangle
+    public void paintComponent(Graphics g) {
+        // set colour to background colour - WHITE
+        g.setColor(Color.WHITE);
+        // create and fill the rectangle big enough to cover the whole screen
+        g.fillRect(0, 0, 1000, 1000);
+
+    }
+}
+
+// class that creates line
+class drawLine extends JPanel {
+    // declaring private variables
+    private int p1x, p1y, p2x, p2y, ang;
+    private int angle;
+    private Color CC;
+
+    // constructor method drawLine(), this method takes in all parameters
+    drawLine(int p1x1, int p1y1, int p2x1, int p2y1, int ang1, Color C) {
+        p1x = p1x1;
+        p1y = p1y1;
+        p2x = p2x1;
+        p2y = p2y1;
+        CC = C;
+        ang = ang1;
+        // making sure the angle is correct form and compilabe
+        if ((p2x1 - p2y1) != 0) {
+            angle = 0;
+        } else {
+            angle = (int) (180 * Math.floor(Math.tan(Math.abs(p2y1 - p1y1) / Math.abs(p2x1 - p1x1))));
+        }
+        if (angle <= 1) {
+            angle = 1;
+        }
+    }
+
+    // paintComponent that draws the line using parameters from constructor method
+    public void paintComponent(Graphics g) {
+        // setting the colour
+        g.setColor(CC);
+        // drawing the line
+        g.drawArc(p1x, p1y, p2x - p1x, p2y - p1y, ang % 360, angle);
+    }
+}
+
+// this class is used for drawing objects
+class drawObject extends JPanel {
+
+    // declare private variables
+    private int x, y, w, h;
+    private int obj;
+    private Color CC;
+
+    private int px1, px2, px3, py1, py2, py3;
+
+    private int[] xPoints = new int[3];
+    private int[] yPoints = new int[3];
+
+    // constructor method takes in all the parameters and stores them in previously
+    // declared variables
+    drawObject(int object, int x1, int y1, int w1, int h1, Color C) {
+        obj = object;
+
+        x = x1;
+        y = y1;
+        w = w1;
+        h = h1;
+        CC = C;
+
+        xPoints[0] = x1;
+        xPoints[1] = x1 - w1 / 2;
+        xPoints[2] = x1 + w1 / 2;
+
+        yPoints[0] = y1;
+        yPoints[1] = y1 + h1;
+        yPoints[2] = y1 + h1;
+    }
+
+    // paintComponent method draws components depending on which object is being
+    // called
+    public void paintComponent(Graphics g) {
+        // setting the colour
+        g.setColor(CC);
+
+        // drawing objects depending on 'obj' variable
+        switch (obj) {
+        // 1 for rectangle
+        case 1:
+            g.fillRect(x, y, w, h);
+            break;
+        // 2 for oval
+        case 2:
+            g.fillOval(x, y, w, h);
+            break;
+        // 3 for triangle
+        case 3:
+            g.fillPolygon(xPoints, yPoints, 3);
+            break;
+        default:
+            return;
+        }
+
+    }
+}
+
+// main class drawDemo extending JFrame
+public class drawDemo extends JFrame {
+    // title of the window
+    String title = "DrawDemo";
+    // declaring variables
+    // split pane
+    private final JSplitPane splitPane;
+    // panel for all inputs
+    private final JPanel inputPanel;
+    // panel for drawings
+    private final JPanel boardPanel;
+    // buttons for drawing
+    private final JButton addRect, addCircle, addTriangle, addLine;
+    // buttons for colours
+    private final JButton redButton, orangeButton, yellowButton, greenButton, blueButton, indigoButton, violetButton;
+    // colours
+    private final Color red = new Color(219, 37, 37);
+    private final Color orange = new Color(255, 172, 30);
+    private final Color yellow = new Color(255, 255, 25);
+    private final Color green = new Color(42, 193, 19);
+    private final Color blue = new Color(19, 103, 193);
+    private final Color indigo = new Color(76, 19, 193);
+    private final Color violet = new Color(247, 12, 227);
+    private Color color;
+    // buttons for save and load
+    private final JButton save, load, resetButton;
+    // declaring font that will be used
+    Font font = new Font("Bahnschrift Light", Font.BOLD, 20);
+    // intro message label
+    private final JLabel introText = new JLabel("Welcome to DrawDemo!");
+    // current colour display
+    private String colourText = "RED";
+    // current colour text label
+    private JLabel CCtext = new JLabel("Color: " + colourText);
+    // origin size for shapes
+    private final JLabel Origin = new JLabel("Origin    x                y");
+    private final JLabel Size = new JLabel("Size       h                w");
+    // p1, p2 and angle for line
+    private final JLabel p1 = new JLabel("Point1    x                y");
+    private final JLabel p2 = new JLabel("Point2    x                y");
+    private final JLabel ang = new JLabel("Angle");
+    // declare input dialogs
+    private final JTextField objX, objY, objH, objW;
+    private final JTextField p1X, p1Y, p2X, p2Y, pAng;
+
+    // drawDemo constructor method
+    public drawDemo() {
+        // set title
+        setTitle(title);
+        // close when 'X' is pressed
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        // make screen unresizable
+        setResizable(false);
+        // creating split pane
+        splitPane = new JSplitPane();
+        // creating panels
+        inputPanel = new JPanel();
+        boardPanel = new JPanel();
+        // creating input dialogs
+        objX = new JTextField();
+        objY = new JTextField();
+        objH = new JTextField();
+        objW = new JTextField();
+        p1X = new JTextField();
+        p1Y = new JTextField();
+        p2X = new JTextField();
+        p2Y = new JTextField();
+        pAng = new JTextField();
+        // creating buttons for input pannel - DRAWING BUTTONS
+        addRect = new JButton("RECTANGLE");
+        addCircle = new JButton("CIRCLE");
+        addTriangle = new JButton("TRIANGLE");
+        addLine = new JButton("LINE");
+        // creating buttons for board panel COLOURS + SAVE and LOAD
+        redButton = new JButton();
+        orangeButton = new JButton();
+        yellowButton = new JButton();
+        greenButton = new JButton();
+        blueButton = new JButton();
+        indigoButton = new JButton();
+        violetButton = new JButton();
+        save = new JButton("SAVE");
+        load = new JButton("LOAD");
+        resetButton = new JButton("RESET");
+        // set the size of the screen and add split pane into it
+        setPreferredSize(new Dimension(800, 600));
+        getContentPane().setLayout(new GridLayout());
+        // add split pane to the content pane
+        getContentPane().add(splitPane);
+        // setting up split pane
+        splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT); // split horizontally
+        splitPane.setDividerLocation(250); // split at x = 250px
+        splitPane.setLeftComponent(inputPanel); // add input panel
+        splitPane.setRightComponent(boardPanel); // add boar panel
+        // declare sizes for both panels so split pane is unmovable
+        inputPanel.setMinimumSize(new Dimension(250, 600));
+        inputPanel.setBackground(new Color(47, 48, 48));
+        boardPanel.setMinimumSize(new Dimension(550, 600));
+        boardPanel.setBackground(new Color(255, 255, 255));
+        // add image logo
+        JLabel image = new JLabel(); // declaration
+        image.setIcon(new ImageIcon("logoDrawDemo.png"));// your image here
+        inputPanel.add(image); // 465x105
+        image.setBounds(0, 60, 465, 105); // setting bounds
+        // intro text
+        inputPanel.add(introText); // adding to the panel
+        introText.setBounds(10, 20, 300, 20); // setting bounds
+        introText.setFont(font); // using the 'font'
+        introText.setForeground(new Color(255, 255, 255)); // setting colour
+        // current colour indicator text
+        inputPanel.add(CCtext); // adding to the panel
+        CCtext.setBounds(10, 485, 200, 20); // setting the bounds
+        CCtext.setFont(new Font("Bahnschrift Light", Font.BOLD, 14)); // set font
+        CCtext.setForeground(new Color(166, 168, 168)); // set colour
+        // adding background text
+        inputPanel.add(Origin); // add to the panel
+        Origin.setBounds(10, 190, 200, 20); // set bounds
+        Origin.setFont(new Font("Bahnschrift Light", Font.BOLD, 14)); // set font
+        Origin.setForeground(new Color(166, 168, 168)); // set colour
+        // adding input dialogs
+        inputPanel.add(objX); // objectX value
+        objX.setBounds(85, 190, 40, 25); // set bounds
+        inputPanel.add(objY); // objectY value
+        objY.setBounds(155, 190, 40, 25); // set bounds
+        inputPanel.add(objH); // object height value
+        objH.setBounds(85, 240, 40, 25); // set bounds
+        inputPanel.add(objW); // object width value
+        objW.setBounds(155, 240, 40, 25); // set bounds
+        inputPanel.add(p1X); // point 1 X value
+        p1X.setBounds(85, 330, 40, 25); // set bounds
+        inputPanel.add(p1Y); // point 1 Y value
+        p1Y.setBounds(155, 330, 40, 25); // set bounds
+        inputPanel.add(p2X); // point 2 X value
+        p2X.setBounds(85, 370, 40, 25); // set bounds
+        inputPanel.add(p2Y); // point 2 Y value
+        p2Y.setBounds(155, 370, 40, 25); // set bounds
+        inputPanel.add(pAng); // line angle setup
+        pAng.setBounds(65, 410, 40, 25); // set bounds
+        // adding bit more background text
+        inputPanel.add(Size); // adding to the panel
+        Size.setBounds(10, 240, 200, 20); // set bounds
+        Size.setFont(new Font("Bahnschrift Light", Font.BOLD, 14)); // set font
+        Size.setForeground(new Color(166, 168, 168)); // set colour
+        inputPanel.add(p1); // add p1 to the panel
+        p1.setBounds(10, 330, 200, 20); // set bounds
+        p1.setFont(new Font("Bahnschrift Light", Font.BOLD, 14)); // set font
+        p1.setForeground(new Color(166, 168, 168)); // set colour
+        inputPanel.add(p2); // add p2 to the panel
+        p2.setBounds(10, 370, 200, 20); // set bounds
+        p2.setFont(new Font("Bahnschrift Light", Font.BOLD, 14)); // set font
+        p2.setForeground(new Color(166, 168, 168)); // set colour
+        inputPanel.add(ang); // add angle to the panel
+        ang.setBounds(10, 410, 200, 20); // set bounds
+        ang.setFont(new Font("Bahnschrift Light", Font.BOLD, 14)); // set font
+        ang.setForeground(new Color(166, 168, 168)); // set colour
+        // buttons
+        inputPanel.setLayout(null); // set layout to null for a parent
+        inputPanel.add(resetButton); // add RESET BUTTON
+        resetButton.setBounds(0, 510, 250, 60); // set bounds
+        resetButton.setFont(new Font("Bahnschrift Light", Font.BOLD, 18)); // set font
+        inputPanel.add(addRect); // add RECTANGLE
+        addRect.setBounds(-10, 275, 90, 30); // set bounds
+        addRect.setFont(new Font("Bahnschrift Light", Font.BOLD, 9)); // set font
+        inputPanel.add(addCircle); // add CIRCLE
+        addCircle.setBounds(80, 275, 90, 30); // set bounds
+        addCircle.setFont(new Font("Bahnschrift Light", Font.BOLD, 9)); // set font
+        inputPanel.add(addTriangle); // add TRIANGLE
+        addTriangle.setBounds(170, 275, 90, 30); // set bounds
+        addTriangle.setFont(new Font("Bahnschrift Light", Font.BOLD, 9)); // set font
+        inputPanel.add(addLine); // add LINE
+        addLine.setBounds(80, 450, 90, 30); // set bounds
+        addLine.setFont(new Font("Bahnschrift Light", Font.BOLD, 9)); // set font
+        // declare the colour for objects to be drawn
+        color = red;
+        // declare button size here to make it easier for changing
+        int colourButtonLength = 50;
+        int colourButtonHeight = 30;
+        // buttons for colours
+        boardPanel.setLayout(null); // set layout to null for a parent
+        boardPanel.add(redButton); // add red button
+        redButton.setBackground(red); // change to cooresponding colour
+        redButton.setBounds(0, 0, colourButtonLength, colourButtonHeight); // set bounds
+        boardPanel.add(orangeButton); // add orange button
+        orangeButton.setBackground(orange); // change to cooresponding colour
+        orangeButton.setBounds(colourButtonLength, 0, colourButtonLength, colourButtonHeight); // set bounds
+        boardPanel.add(yellowButton); // ad yellow button
+        yellowButton.setBackground(yellow); // change to corresponding colour
+        yellowButton.setBounds(colourButtonLength * 2, 0, colourButtonLength, colourButtonHeight); // set bounds
+        boardPanel.add(greenButton); // add green button
+        greenButton.setBackground(green); // change to corresponding colour
+        greenButton.setBounds(colourButtonLength * 3, 0, colourButtonLength, colourButtonHeight); // set bounds
+        boardPanel.add(blueButton); // add blue button
+        blueButton.setBackground(blue); // change to corresponding colour
+        blueButton.setBounds(colourButtonLength * 4, 0, colourButtonLength, colourButtonHeight); // set bounds
+        boardPanel.add(indigoButton); // add indigo button
+        indigoButton.setBackground(indigo); // change to corresponding colour
+        indigoButton.setBounds(colourButtonLength * 5, 0, colourButtonLength, colourButtonHeight); // set bounds
+        boardPanel.add(violetButton); // add violet button
+        violetButton.setBackground(violet); // change to corresponding colour
+        violetButton.setBounds(colourButtonLength * 6, 0, colourButtonLength, colourButtonHeight); // set bounds
+        boardPanel.add(save); // add save button
+        save.setBounds(350, 0, 90, 30); // set bounds
+        boardPanel.add(load); // add load button
+        load.setBounds(440, 0, 90, 30); // set bounds
+        // action event for red button
+        redButton.addActionListener(e -> {
+            // change colour
+            color = red;
+            // update current colour indicator
+            colourText = "RED";
+            CCtext.setText("Color: " + colourText);
+        });
+        // action event for orange button
+        orangeButton.addActionListener(e -> {
+            // change colour
+            color = orange;
+            // update current colour indicator
+            colourText = "ORANGE";
+            CCtext.setText("Color: " + colourText);
+        });
+        // action event for yellow button
+        yellowButton.addActionListener(e -> {
+            // change colour
+            color = yellow;
+            // update current colour indicator
+            colourText = "YELLOW";
+            CCtext.setText("Color: " + colourText);
+        });
+        // action event for green button
+        greenButton.addActionListener(e -> {
+            // change colour
+            color = green;
+            // update current colour indicator
+            colourText = "GREEN";
+            CCtext.setText("Color: " + colourText);
+        });
+        // action event for blue button
+        blueButton.addActionListener(e -> {
+            // change colour
+            color = blue;
+            // update current colour indicator
+            colourText = "BLUE";
+            CCtext.setText("Color: " + colourText);
+        });
+        // action event for indigo button
+        indigoButton.addActionListener(e -> {
+            // change colour
+            color = indigo;
+            // update current colour indicator
+            colourText = "INDIGO";
+            CCtext.setText("Color: " + colourText);
+        });
+        // action event for violet button
+        violetButton.addActionListener(e -> {
+            // change colour
+            color = violet;
+            // update current colour indicator
+            colourText = "VIOLET";
+            CCtext.setText("Color: " + colourText);
+        });
+        // action event for reset button
+        resetButton.addActionListener(e -> {
+            // cover everything with a instance of class 'clear'
+            clear rect = new clear();
+            boardPanel.add(rect);
+            rect.setBounds(0, 31, 1000, 1000);
+            // call repaint method
+            repaint();
+        });
+        // action event for drawing rectangle button
+        addRect.addActionListener(e -> {
+            // call repaint method
+            repaint();
+            // take in all values from input dialogs
+            int x = Integer.valueOf(objX.getText());
+            int y = Integer.valueOf(objY.getText());
+            int w = Integer.valueOf(objW.getText());
+            int h = Integer.valueOf(objH.getText());
+            // create instance of the drawObject class
+            drawObject rect = new drawObject(1, x, y, w, h, color);
+            // add to the panel
+            boardPanel.add(rect);
+            // set bounds
+            rect.setBounds(0, 31, 1000, 1000);
+        });
+        // action event for drawing circle button
+        addCircle.addActionListener(e -> {
+            // call repaint method
+            repaint();
+            // take in all values from input dialogs
+            int x = Integer.valueOf(objX.getText());
+            int y = Integer.valueOf(objY.getText());
+            int w = Integer.valueOf(objW.getText());
+            int h = Integer.valueOf(objH.getText());
+            // create instance of the drawObject class
+            drawObject rect = new drawObject(2, x, y, w, h, color);
+            // add to the panel
+            boardPanel.add(rect);
+            // set bounds
+            rect.setBounds(0, 31, 1000, 1000);
+        });
+        // action event for drawing triangle button
+        addTriangle.addActionListener(e -> {
+            // call repaint method
+            repaint();
+            // take in all values from input dialogs
+            int x = Integer.valueOf(objX.getText());
+            int y = Integer.valueOf(objY.getText());
+            int w = Integer.valueOf(objW.getText());
+            int h = Integer.valueOf(objH.getText());
+            // create instance of the drawObject class
+            drawObject rect = new drawObject(3, x, y, w, h, color);
+            boardPanel.add(rect);
+            rect.setBounds(0, 31, 1000, 1000);
+        });
+        // action event for drawing a line
+        addLine.addActionListener(e -> {
+            // take in all input dialog values
+            int p1x = Integer.valueOf(p1X.getText());
+            int p1y = Integer.valueOf(p1Y.getText());
+            int p2x = Integer.valueOf(p2X.getText());
+            int p2y = Integer.valueOf(p2Y.getText());
+            int ang = Integer.valueOf(pAng.getText());
+            // create instance of the line
+            drawLine line = new drawLine(p1x, p1y, p2x, p2y, ang, color);
+            // add to the panel
+            boardPanel.add(line);
+            // set bounds
+            line.setBounds(0, 31, 1000, 1000);
+            // call repaint method
+            repaint();
+        });
+        // clean things out, 'pack' the screen
+        pack();
+    }
+
+    // main function
+    public static void main(String args[]) {
+        // invoke the constructor class
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new drawDemo().setVisible(true);
+            }
+        });
+    }
+}
